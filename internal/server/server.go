@@ -20,7 +20,22 @@ package server
 import (
 	"log"
 	"net/http"
+	"rightmesh.io/awdb/pkg/adb"
 )
+
+// proxyAdbRun executes the command stored in the provided adb.Run instance and handles
+// reporting an error if one occurs by writing a 502 error to the response along with the
+// contents of stderr, and returning the error.
+// If no errors occur, nil is returned and nothing is written to the response.
+func proxyAdbRun(response http.ResponseWriter, adbRun *adb.Run) (err error) {
+	err = adbRun.Output()
+	if err != nil {
+		response.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		response.WriteHeader(http.StatusBadGateway)
+		response.Write(adbRun.StdErr)
+	}
+	return err
+}
 
 // Start sets up the HTTP routes and serves the service, crashing if any errors are encountered.
 func Start() {
