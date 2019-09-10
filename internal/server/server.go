@@ -14,14 +14,15 @@
    limitations under the License.
 */
 
-// Package main contains the main server executable.
-package main
+// Package server maps routes to handler functions.
+package server
 
 import (
-	"rightmesh.io/awdb/internal/server"
+	"log"
+	"net/http"
 )
 
-// Starts the server.
-func main() {
-	server.Start()
+// Start sets up the HTTP routes and serves the service, crashing if any errors are encountered.
+func Start() {
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
