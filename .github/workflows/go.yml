@@ -17,5 +17,12 @@ jobs:
       with:
           path: go/src/github.com/rightmesh/awdb
 
-    - name: Build
-      run: go build -v .
+    - name: Install golint
+      run: |
+        export GOPATH=$(realpath ../../../..)
+        go get golang.org/x/lint/golint
+
+    - name: Build project
+      run: |
+        export GOPATH=$(realpath ../../../..)
+        make
