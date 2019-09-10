@@ -23,6 +23,17 @@ import (
 	"rightmesh.io/awdb/pkg/adb"
 )
 
+// helpHandler returns the contents of `adb help` as plaintext.
+func helpHandler(response http.ResponseWriter, request *http.Request) {
+	adbRun := adb.NewRun("help")
+	if err := proxyAdbRun(response, &adbRun); err == nil {
+		response.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		response.WriteHeader(http.StatusOK)
+
+		response.Write(adbRun.StdOut)
+	}
+}
+
 // proxyAdbRun executes the command stored in the provided adb.Run instance and handles
 // reporting an error if one occurs by writing a 502 error to the response along with the
 // contents of stderr, and returning the error.
@@ -39,5 +50,6 @@ func proxyAdbRun(response http.ResponseWriter, adbRun *adb.Run) (err error) {
 
 // Start sets up the HTTP routes and serves the service, crashing if any errors are encountered.
 func Start() {
+	http.HandleFunc("/help/", helpHandler)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
