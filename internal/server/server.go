@@ -18,9 +18,9 @@
 package server
 
 import (
+	"github.com/rightmesh/awdb/pkg/adb"
 	"log"
 	"net/http"
-	"rightmesh.io/awdb/pkg/adb"
 )
 
 // helpHandler returns the contents of `adb help` as plaintext.

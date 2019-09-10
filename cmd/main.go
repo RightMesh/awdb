@@ -18,7 +18,7 @@
 package main
 
 import (
-	"rightmesh.io/awdb/internal/server"
+	"github.com/rightmesh/awdb/internal/server"
 )
 
 // Starts the server.
