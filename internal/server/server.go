@@ -65,5 +65,6 @@ func proxyAdbRun(response http.ResponseWriter, adbRun *adb.Run) (err error) {
 // Start sets up the HTTP routes and serves the service, crashing if any errors are encountered.
 func Start() {
 	http.HandleFunc("/help/", helpHandler)
+	http.HandleFunc("/devices/", devicesHandler)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
