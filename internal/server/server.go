@@ -34,6 +34,15 @@ func helpHandler(response http.ResponseWriter, request *http.Request) {
 	}
 }
 
+// devicesHandler returns the contents of `adb devices -l` as JSON.
+// TODO: Add example JSON here.
+func devicesHandler(response http.ResponseWriter, request *http.Request) {
+	adbRun := adb.NewRun("devices", "-l")
+	if err := proxyAdbRun(response, &adbRun); err == nil {
+		// TODO
+	}
+}
+
 // proxyAdbRun executes the command stored in the provided adb.Run instance and handles
 // reporting an error if one occurs by writing a 502 error to the response along with the
 // contents of stderr, and returning the error.
