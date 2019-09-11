@@ -45,6 +45,11 @@ func proxyAdbRun(response http.ResponseWriter, adbRun *adb.Run) (err error) {
 		response.WriteHeader(http.StatusBadGateway)
 		response.Write(adbRun.StdErr)
 	}
+
+	// TODO: Trim out ADB debugging lines. E.g.:
+	//     * daemon not running; starting now at tcp:5037
+	//     * daemon started successfully
+
 	return err
 }
 
