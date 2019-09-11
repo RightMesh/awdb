@@ -17,6 +17,8 @@
 package adb
 
 import (
+	"bytes"
+	"io"
 	"strconv"
 	"strings"
 )
@@ -51,6 +53,40 @@ type Device struct {
 	// Optional, the device's name.
 	// e.g. "flo"
 	Device string
+}
+
+// ParseDeviceList returns a slice of adb.Devices parsed from the output from `adb devices -l`.
+// If an error is encountered while parsing, the error will be returned along with all devices
+// parsed up to this point, or a nil slice if none have been successfully parsed yet.
+func ParseDeviceList(output []byte) ([]*Device, error) {
+	var devices []*Device
+
+	outputBuffer := bytes.NewBuffer(output)
+
+	// Discard legend line.
+	if _, err := outputBuffer.ReadString('\n'); err != nil {
+		return devices, err
+	}
+
+	for {
+		line, err := outputBuffer.ReadString('\n')
+
+		// Stop looping when an empty line is encountered.
+		if err != nil || len(line) == 1 {
+			if err != io.EOF {
+				return devices, err
+			}
+			break
+		}
+
+		device, err := parseDeviceLine(line)
+		if err != nil {
+			return devices, err
+		}
+		devices = append(devices, device)
+	}
+
+	return devices, nil
 }
 
 // parseDeviceLine returns a *adb.Device parsed from a single line of output from `adb devices -l`.
