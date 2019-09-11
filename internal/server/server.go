@@ -18,6 +18,7 @@
 package server
 
 import (
+	"encoding/json"
 	"github.com/rightmesh/awdb/pkg/adb"
 	"log"
 	"net/http"
@@ -39,7 +40,16 @@ func helpHandler(response http.ResponseWriter, request *http.Request) {
 func devicesHandler(response http.ResponseWriter, request *http.Request) {
 	adbRun := adb.NewRun("devices", "-l")
 	if err := proxyAdbRun(response, &adbRun); err == nil {
-		// TODO
+		deviceList, err := adb.ParseDeviceList(adbRun.StdOut)
+		if err != nil {
+			// TODO: Make a 502 helper method
+			return
+		}
+
+		encoder := json.NewEncoder(response)
+		if err := encoder.Encode(deviceList); err != nil {
+			// TODO: Wrap marshall calls in another method that can account for these errors.
+		}
 	}
 }
 
