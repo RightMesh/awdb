@@ -16,6 +16,11 @@
 
 package adb
 
+import (
+	"strconv"
+	"strings"
+)
+
 // Device represents a connected device as reported by `adb devices -l`.
 // See https://developer.android.com/studio/command-line/adb#devicestatus
 type Device struct {
@@ -46,4 +51,47 @@ type Device struct {
 	// Optional, the device's name.
 	// e.g. "flo"
 	Device string
+}
+
+// parseDeviceLine returns a *adb.Device parsed from a single line of output from `adb devices -l`.
+func parseDeviceLine(line string) (*Device, error) {
+	device := new(Device)
+	fields := strings.Fields(line)
+
+	// Position of first two fields are fixed.
+	device.SerialID = fields[0]
+	device.State = fields[1]
+
+	// Position of remaining fields is variable.
+	// All have a key:value format.
+	for _, field := range fields[2:] {
+		seperator := strings.IndexRune(field, ':')
+		if seperator == -1 {
+			continue
+		}
+
+		value := field[seperator+1:]
+		switch field[:seperator] {
+		case "transport_id":
+			var err error
+			device.TransportID, err = strconv.Atoi(value)
+			if err != nil {
+				return nil, err
+			}
+		case "serial_id":
+			device.SerialID = value
+		case "state":
+			device.State = value
+		case "usb":
+			device.Usb = value
+		case "product":
+			device.Product = value
+		case "model":
+			device.Model = value
+		case "device":
+			device.Device = value
+		}
+	}
+
+	return device, nil
 }
