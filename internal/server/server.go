@@ -18,50 +18,12 @@
 package server
 
 import (
-	"encoding/json"
-	"github.com/rightmesh/awdb/pkg/adb"
 	"log"
 	"net/http"
 )
 
 const contentTypeText = "text/plain; charset=utf-8"
 const contentTypeJSON = "application/json; charset=utf-8"
-
-// helpHandler returns the contents of `adb help` as plaintext.
-// May return a 502 if communicating with ADB fails.
-func helpHandler(response http.ResponseWriter, request *http.Request) {
-	adbRun := adb.NewRun("help")
-	if err := adbRun.Output(); err != nil {
-		writeResponse(response, http.StatusBadGateway, contentTypeText, adbRun.StdErr)
-		return
-	}
-
-	writeResponse(response, http.StatusOK, contentTypeText, adbRun.StdOut)
-}
-
-// devicesHandler returns the contents of `adb devices -l` as JSON.
-// May return a 502 if communicating with ADB fails, or a 500 if marshalling JSON fails.
-func devicesHandler(response http.ResponseWriter, request *http.Request) {
-	adbRun := adb.NewRun("devices", "-l")
-	if err := adbRun.Output(); err != nil {
-		writeResponse(response, http.StatusBadGateway, contentTypeText, adbRun.StdErr)
-		return
-	}
-
-	deviceList, err := adb.ParseDeviceList(adbRun.StdOut)
-	if err != nil {
-		writeResponse(response, http.StatusBadGateway, contentTypeText, []byte(err.Error()))
-		return
-	}
-
-	jsonBytes, err := json.Marshal(deviceList)
-	if err != nil {
-		writeResponse(response, http.StatusInternalServerError, contentTypeText, []byte(err.Error()))
-		return
-	}
-
-	writeResponse(response, http.StatusOK, contentTypeJSON, jsonBytes)
-}
 
 // writeResponse is a shorthand for configuring and writing to an http.ResponseWriter, writing the
 // provided status code to the provided response along with the provided content of the provided type.
