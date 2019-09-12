@@ -18,8 +18,10 @@
 package server
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/rightmesh/awdb/pkg/adb"
+	"io"
 	"log"
 	"net/http"
 )
@@ -46,10 +48,7 @@ func devicesHandler(response http.ResponseWriter, request *http.Request) {
 			return
 		}
 
-		encoder := json.NewEncoder(response)
-		if err := encoder.Encode(deviceList); err != nil {
-			// TODO: Wrap marshall calls in another method that can account for these errors.
-		}
+		writeResponseAsJSON(response, deviceList)
 	}
 }
 
@@ -70,6 +69,25 @@ func proxyAdbRun(response http.ResponseWriter, adbRun *adb.Run) (err error) {
 	//     * daemon started successfully
 
 	return err
+}
+
+// writeResponseAsJSON attempts to marshal the provided data to JSON, writing it to the provided
+// response with an HTTP 200 code if successful, or writing a 502 to the provided response if not.
+func writeResponseAsJSON(response http.ResponseWriter, data interface{}) error {
+	temp := new(bytes.Buffer)
+
+	encoder := json.NewEncoder(temp)
+	err := encoder.Encode(data)
+	if err != nil {
+		response.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		response.WriteHeader(http.StatusBadGateway)
+		return err
+	}
+
+	response.Header().Set("Content-Type", "application/json; charset=utf-8")
+	response.WriteHeader(http.StatusOK)
+	io.Copy(response, temp)
+	return nil
 }
 
 // Start sets up the HTTP routes and serves the service, crashing if any errors are encountered.
