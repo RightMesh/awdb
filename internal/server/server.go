@@ -18,7 +18,6 @@
 package server
 
 import (
-	"bytes"
 	"encoding/json"
 	"github.com/rightmesh/awdb/pkg/adb"
 	"log"
@@ -54,7 +53,13 @@ func devicesHandler(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	writeResponseAsJSON(response, deviceList)
+	jsonBytes, err := json.Marshal(deviceList)
+	if err != nil {
+		writeResponse(response, http.StatusInternalServerError, CONTENT_TYPE_TEXT, []byte(err.Error()))
+		return
+	}
+
+	writeResponse(response, http.StatusOK, CONTENT_TYPE_JSON, jsonBytes)
 }
 
 // writeResponse is a shorthand for configuring and writing to an http.ResponseWriter, writing the
@@ -75,22 +80,6 @@ func writeResponse(response http.ResponseWriter, statusCode int, contentType str
 	}
 
 	return nil
-}
-
-// writeResponseAsJSON attempts to marshal the provided data to JSON, writing it to the provided
-// response with an HTTP 200 code if successful, or writing a 502 to the provided response if not.
-// Returns an error if writing to the http.responseWriter fails.
-func writeResponseAsJSON(response http.ResponseWriter, data interface{}) error {
-	temp := new(bytes.Buffer)
-
-	encoder := json.NewEncoder(temp)
-	err := encoder.Encode(data)
-	if err != nil {
-		writeResponse(response, http.StatusBadGateway, CONTENT_TYPE_TEXT, []byte(err.Error()))
-		return err
-	}
-
-	return writeResponse(response, http.StatusOK, CONTENT_TYPE_JSON, temp.Bytes())
 }
 
 // Start sets up the HTTP routes and serves the service, crashing if any errors are encountered.
