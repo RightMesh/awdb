@@ -28,6 +28,7 @@ const CONTENT_TYPE_TEXT = "text/plain; charset=utf-8"
 const CONTENT_TYPE_JSON = "application/json; charset=utf-8"
 
 // helpHandler returns the contents of `adb help` as plaintext.
+// May return a 502 if communicating with ADB fails.
 func helpHandler(response http.ResponseWriter, request *http.Request) {
 	adbRun := adb.NewRun("help")
 	if err := adbRun.Output(); err != nil {
@@ -39,6 +40,7 @@ func helpHandler(response http.ResponseWriter, request *http.Request) {
 }
 
 // devicesHandler returns the contents of `adb devices -l` as JSON.
+// May return a 502 if communicating with ADB fails, or a 500 if marshalling JSON fails.
 func devicesHandler(response http.ResponseWriter, request *http.Request) {
 	adbRun := adb.NewRun("devices", "-l")
 	if err := adbRun.Output(); err != nil {
