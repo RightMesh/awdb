@@ -51,7 +51,7 @@ func devicesHandler(response http.ResponseWriter, request *http.Request) {
 
 	deviceList, err := adb.ParseDeviceList(adbRun.StdOut)
 	if err != nil {
-		// TODO: Make a 502 helper method
+		writeBadGatewayResponse(response, CONTENT_TYPE_TEXT, []byte(err.Error()))
 		return
 	}
 
@@ -65,9 +65,7 @@ func devicesHandler(response http.ResponseWriter, request *http.Request) {
 func proxyAdbRun(response http.ResponseWriter, adbRun *adb.Run) (err error) {
 	err = adbRun.Output()
 	if err != nil {
-		response.Header().Set("Content-Type", CONTENT_TYPE_TEXT)
-		response.WriteHeader(http.StatusBadGateway)
-		response.Write(adbRun.StdErr)
+		writeBadGatewayResponse(response, CONTENT_TYPE_TEXT, adbRun.StdErr)
 	}
 
 	// TODO: Trim out ADB debugging lines. E.g.:
@@ -75,6 +73,25 @@ func proxyAdbRun(response http.ResponseWriter, adbRun *adb.Run) (err error) {
 	//     * daemon started successfully
 
 	return err
+}
+
+// writeBadGatewayResponse writes a 502 return code and the provided content to the provided response.
+// Returns an error if there is any trouble writing to the http.ResponseWriter.
+func writeBadGatewayResponse(response http.ResponseWriter, contentType string, content []byte) error {
+	if contentType != "" {
+		response.Header().Set("Content-Type", contentType)
+	}
+
+	response.WriteHeader(http.StatusBadGateway)
+
+	if content != nil {
+		_, err := response.Write(content)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // writeResponseAsJSON attempts to marshal the provided data to JSON, writing it to the provided
@@ -85,8 +102,7 @@ func writeResponseAsJSON(response http.ResponseWriter, data interface{}) error {
 	encoder := json.NewEncoder(temp)
 	err := encoder.Encode(data)
 	if err != nil {
-		response.Header().Set("Content-Type", CONTENT_TYPE_TEXT)
-		response.WriteHeader(http.StatusBadGateway)
+		writeBadGatewayResponse(response, CONTENT_TYPE_TEXT, []byte(err.Error()))
 		return err
 	}
 
