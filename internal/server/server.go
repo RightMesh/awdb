@@ -31,7 +31,8 @@ const CONTENT_TYPE_JSON = "application/json; charset=utf-8"
 // helpHandler returns the contents of `adb help` as plaintext.
 func helpHandler(response http.ResponseWriter, request *http.Request) {
 	adbRun := adb.NewRun("help")
-	if err := proxyAdbRun(response, &adbRun); err != nil {
+	if err := adbRun.Output(); err != nil {
+		writeResponse(response, http.StatusBadGateway, CONTENT_TYPE_TEXT, adbRun.StdErr)
 		return
 	}
 
@@ -42,7 +43,8 @@ func helpHandler(response http.ResponseWriter, request *http.Request) {
 // TODO: Add example JSON here.
 func devicesHandler(response http.ResponseWriter, request *http.Request) {
 	adbRun := adb.NewRun("devices", "-l")
-	if err := proxyAdbRun(response, &adbRun); err != nil {
+	if err := adbRun.Output(); err != nil {
+		writeResponse(response, http.StatusBadGateway, CONTENT_TYPE_TEXT, adbRun.StdErr)
 		return
 	}
 
@@ -53,23 +55,6 @@ func devicesHandler(response http.ResponseWriter, request *http.Request) {
 	}
 
 	writeResponseAsJSON(response, deviceList)
-}
-
-// proxyAdbRun executes the command stored in the provided adb.Run instance and handles
-// reporting an error if one occurs by writing a 502 error to the response along with the
-// contents of stderr, and returning the error.
-// If no errors occur, nil is returned and nothing is written to the response.
-func proxyAdbRun(response http.ResponseWriter, adbRun *adb.Run) (err error) {
-	err = adbRun.Output()
-	if err != nil {
-		writeResponse(response, http.StatusBadGateway, CONTENT_TYPE_TEXT, adbRun.StdErr)
-	}
-
-	// TODO: Trim out ADB debugging lines. E.g.:
-	//     * daemon not running; starting now at tcp:5037
-	//     * daemon started successfully
-
-	return err
 }
 
 // writeResponse is a shorthand for configuring and writing to an http.ResponseWriter, writing the
