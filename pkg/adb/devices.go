@@ -114,10 +114,6 @@ func parseDeviceLine(line string) (*Device, error) {
 			if err != nil {
 				return nil, err
 			}
-		case "serial_id":
-			device.SerialID = value
-		case "state":
-			device.State = value
 		case "usb":
 			device.Usb = value
 		case "product":
