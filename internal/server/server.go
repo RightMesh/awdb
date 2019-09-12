@@ -24,19 +24,19 @@ import (
 	"net/http"
 )
 
-const CONTENT_TYPE_TEXT = "text/plain; charset=utf-8"
-const CONTENT_TYPE_JSON = "application/json; charset=utf-8"
+const contentTypeText = "text/plain; charset=utf-8"
+const contentTypeJSON = "application/json; charset=utf-8"
 
 // helpHandler returns the contents of `adb help` as plaintext.
 // May return a 502 if communicating with ADB fails.
 func helpHandler(response http.ResponseWriter, request *http.Request) {
 	adbRun := adb.NewRun("help")
 	if err := adbRun.Output(); err != nil {
-		writeResponse(response, http.StatusBadGateway, CONTENT_TYPE_TEXT, adbRun.StdErr)
+		writeResponse(response, http.StatusBadGateway, contentTypeText, adbRun.StdErr)
 		return
 	}
 
-	writeResponse(response, http.StatusOK, CONTENT_TYPE_TEXT, adbRun.StdOut)
+	writeResponse(response, http.StatusOK, contentTypeText, adbRun.StdOut)
 }
 
 // devicesHandler returns the contents of `adb devices -l` as JSON.
@@ -44,23 +44,23 @@ func helpHandler(response http.ResponseWriter, request *http.Request) {
 func devicesHandler(response http.ResponseWriter, request *http.Request) {
 	adbRun := adb.NewRun("devices", "-l")
 	if err := adbRun.Output(); err != nil {
-		writeResponse(response, http.StatusBadGateway, CONTENT_TYPE_TEXT, adbRun.StdErr)
+		writeResponse(response, http.StatusBadGateway, contentTypeText, adbRun.StdErr)
 		return
 	}
 
 	deviceList, err := adb.ParseDeviceList(adbRun.StdOut)
 	if err != nil {
-		writeResponse(response, http.StatusBadGateway, CONTENT_TYPE_TEXT, []byte(err.Error()))
+		writeResponse(response, http.StatusBadGateway, contentTypeText, []byte(err.Error()))
 		return
 	}
 
 	jsonBytes, err := json.Marshal(deviceList)
 	if err != nil {
-		writeResponse(response, http.StatusInternalServerError, CONTENT_TYPE_TEXT, []byte(err.Error()))
+		writeResponse(response, http.StatusInternalServerError, contentTypeText, []byte(err.Error()))
 		return
 	}
 
-	writeResponse(response, http.StatusOK, CONTENT_TYPE_JSON, jsonBytes)
+	writeResponse(response, http.StatusOK, contentTypeJSON, jsonBytes)
 }
 
 // writeResponse is a shorthand for configuring and writing to an http.ResponseWriter, writing the
