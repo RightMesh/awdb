@@ -29,27 +29,30 @@ import (
 // helpHandler returns the contents of `adb help` as plaintext.
 func helpHandler(response http.ResponseWriter, request *http.Request) {
 	adbRun := adb.NewRun("help")
-	if err := proxyAdbRun(response, &adbRun); err == nil {
-		response.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		response.WriteHeader(http.StatusOK)
-
-		response.Write(adbRun.StdOut)
+	if err := proxyAdbRun(response, &adbRun); err != nil {
+		return
 	}
+
+	response.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	response.WriteHeader(http.StatusOK)
+	response.Write(adbRun.StdOut)
 }
 
 // devicesHandler returns the contents of `adb devices -l` as JSON.
 // TODO: Add example JSON here.
 func devicesHandler(response http.ResponseWriter, request *http.Request) {
 	adbRun := adb.NewRun("devices", "-l")
-	if err := proxyAdbRun(response, &adbRun); err == nil {
-		deviceList, err := adb.ParseDeviceList(adbRun.StdOut)
-		if err != nil {
-			// TODO: Make a 502 helper method
-			return
-		}
-
-		writeResponseAsJSON(response, deviceList)
+	if err := proxyAdbRun(response, &adbRun); err != nil {
+		return
 	}
+
+	deviceList, err := adb.ParseDeviceList(adbRun.StdOut)
+	if err != nil {
+		// TODO: Make a 502 helper method
+		return
+	}
+
+	writeResponseAsJSON(response, deviceList)
 }
 
 // proxyAdbRun executes the command stored in the provided adb.Run instance and handles
