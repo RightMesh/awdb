@@ -39,7 +39,6 @@ func helpHandler(response http.ResponseWriter, request *http.Request) {
 }
 
 // devicesHandler returns the contents of `adb devices -l` as JSON.
-// TODO: Add example JSON here.
 func devicesHandler(response http.ResponseWriter, request *http.Request) {
 	adbRun := adb.NewRun("devices", "-l")
 	if err := adbRun.Output(); err != nil {
