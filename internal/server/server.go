@@ -21,7 +21,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/rightmesh/awdb/pkg/adb"
-	"io"
 	"log"
 	"net/http"
 )
@@ -36,9 +35,7 @@ func helpHandler(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	response.Header().Set("Content-Type", CONTENT_TYPE_TEXT)
-	response.WriteHeader(http.StatusOK)
-	response.Write(adbRun.StdOut)
+	writeResponse(response, http.StatusOK, CONTENT_TYPE_TEXT, adbRun.StdOut)
 }
 
 // devicesHandler returns the contents of `adb devices -l` as JSON.
@@ -51,7 +48,7 @@ func devicesHandler(response http.ResponseWriter, request *http.Request) {
 
 	deviceList, err := adb.ParseDeviceList(adbRun.StdOut)
 	if err != nil {
-		writeBadGatewayResponse(response, CONTENT_TYPE_TEXT, []byte(err.Error()))
+		writeResponse(response, http.StatusBadGateway, CONTENT_TYPE_TEXT, []byte(err.Error()))
 		return
 	}
 
@@ -65,7 +62,7 @@ func devicesHandler(response http.ResponseWriter, request *http.Request) {
 func proxyAdbRun(response http.ResponseWriter, adbRun *adb.Run) (err error) {
 	err = adbRun.Output()
 	if err != nil {
-		writeBadGatewayResponse(response, CONTENT_TYPE_TEXT, adbRun.StdErr)
+		writeResponse(response, http.StatusBadGateway, CONTENT_TYPE_TEXT, adbRun.StdErr)
 	}
 
 	// TODO: Trim out ADB debugging lines. E.g.:
@@ -75,14 +72,15 @@ func proxyAdbRun(response http.ResponseWriter, adbRun *adb.Run) (err error) {
 	return err
 }
 
-// writeBadGatewayResponse writes a 502 return code and the provided content to the provided response.
+// writeResponse is a shorthand for configuring and writing to an http.ResponseWriter, writing the
+// provided status code to the provided response along with the provided content of the provided type.
 // Returns an error if there is any trouble writing to the http.ResponseWriter.
-func writeBadGatewayResponse(response http.ResponseWriter, contentType string, content []byte) error {
+func writeResponse(response http.ResponseWriter, statusCode int, contentType string, content []byte) error {
+	response.WriteHeader(statusCode)
+
 	if contentType != "" {
 		response.Header().Set("Content-Type", contentType)
 	}
-
-	response.WriteHeader(http.StatusBadGateway)
 
 	if content != nil {
 		_, err := response.Write(content)
@@ -96,20 +94,18 @@ func writeBadGatewayResponse(response http.ResponseWriter, contentType string, c
 
 // writeResponseAsJSON attempts to marshal the provided data to JSON, writing it to the provided
 // response with an HTTP 200 code if successful, or writing a 502 to the provided response if not.
+// Returns an error if writing to the http.responseWriter fails.
 func writeResponseAsJSON(response http.ResponseWriter, data interface{}) error {
 	temp := new(bytes.Buffer)
 
 	encoder := json.NewEncoder(temp)
 	err := encoder.Encode(data)
 	if err != nil {
-		writeBadGatewayResponse(response, CONTENT_TYPE_TEXT, []byte(err.Error()))
+		writeResponse(response, http.StatusBadGateway, CONTENT_TYPE_TEXT, []byte(err.Error()))
 		return err
 	}
 
-	response.Header().Set("Content-Type", CONTENT_TYPE_JSON)
-	response.WriteHeader(http.StatusOK)
-	io.Copy(response, temp)
-	return nil
+	return writeResponse(response, http.StatusOK, CONTENT_TYPE_JSON, temp.Bytes())
 }
 
 // Start sets up the HTTP routes and serves the service, crashing if any errors are encountered.
