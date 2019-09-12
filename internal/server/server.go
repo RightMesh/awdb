@@ -26,6 +26,9 @@ import (
 	"net/http"
 )
 
+const CONTENT_TYPE_TEXT = "text/plain; charset=utf-8"
+const CONTENT_TYPE_JSON = "application/json; charset=utf-8"
+
 // helpHandler returns the contents of `adb help` as plaintext.
 func helpHandler(response http.ResponseWriter, request *http.Request) {
 	adbRun := adb.NewRun("help")
@@ -33,7 +36,7 @@ func helpHandler(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	response.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	response.Header().Set("Content-Type", CONTENT_TYPE_TEXT)
 	response.WriteHeader(http.StatusOK)
 	response.Write(adbRun.StdOut)
 }
@@ -62,7 +65,7 @@ func devicesHandler(response http.ResponseWriter, request *http.Request) {
 func proxyAdbRun(response http.ResponseWriter, adbRun *adb.Run) (err error) {
 	err = adbRun.Output()
 	if err != nil {
-		response.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		response.Header().Set("Content-Type", CONTENT_TYPE_TEXT)
 		response.WriteHeader(http.StatusBadGateway)
 		response.Write(adbRun.StdErr)
 	}
@@ -82,12 +85,12 @@ func writeResponseAsJSON(response http.ResponseWriter, data interface{}) error {
 	encoder := json.NewEncoder(temp)
 	err := encoder.Encode(data)
 	if err != nil {
-		response.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		response.Header().Set("Content-Type", CONTENT_TYPE_TEXT)
 		response.WriteHeader(http.StatusBadGateway)
 		return err
 	}
 
-	response.Header().Set("Content-Type", "application/json; charset=utf-8")
+	response.Header().Set("Content-Type", CONTENT_TYPE_JSON)
 	response.WriteHeader(http.StatusOK)
 	io.Copy(response, temp)
 	return nil
