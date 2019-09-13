@@ -10,3 +10,33 @@ info:
 externalDocs:
   description: Read more about ADB.
   url: https://developer.android.com/studio/command-line/adb
+tags:
+- name: general commands
+  description: Information and status of ADB.
+paths:
+  /help/:
+    get:
+      tags:
+      - general commands
+      summary: ADB's help page.
+      description: Returns the result of `adb help`.
+      responses:
+        200:
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: Raw contents of ADB's help page.
+                example: |
+                  Android Debug Bridge version 1.0.41
+                  Version 29.0.3
+                  Installed as /usr/bin/adb
+                  ...
+        502:
+          description: Error communicating with ADB.
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: Error message from Go.
