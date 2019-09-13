@@ -1,0 +1,12 @@
+openapi: 3.0.2
+info:
+  title: Android Web Debugging Bridge
+  description: This API exposes the functionality of Google's 'Android Debug Bridge'
+    utility.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 0.0.1
+externalDocs:
+  description: Read more about ADB.
+  url: https://developer.android.com/studio/command-line/adb
