@@ -18,38 +18,36 @@
 package server
 
 import (
-	"github.com/rightmesh/awdb/pkg/adb"
 	"log"
 	"net/http"
 )
 
-// helpHandler returns the contents of `adb help` as plaintext.
-func helpHandler(response http.ResponseWriter, request *http.Request) {
-	adbRun := adb.NewRun("help")
-	if err := proxyAdbRun(response, &adbRun); err == nil {
-		response.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		response.WriteHeader(http.StatusOK)
+const contentTypeText = "text/plain; charset=utf-8"
+const contentTypeJSON = "application/json; charset=utf-8"
 
-		response.Write(adbRun.StdOut)
-	}
-}
+// writeResponse is a shorthand for configuring and writing to an http.ResponseWriter, writing the
+// provided status code to the provided response along with the provided content of the provided type.
+// Returns an error if there is any trouble writing to the http.ResponseWriter.
+func writeResponse(response http.ResponseWriter, statusCode int, contentType string, content []byte) error {
+	response.WriteHeader(statusCode)
 
-// proxyAdbRun executes the command stored in the provided adb.Run instance and handles
-// reporting an error if one occurs by writing a 502 error to the response along with the
-// contents of stderr, and returning the error.
-// If no errors occur, nil is returned and nothing is written to the response.
-func proxyAdbRun(response http.ResponseWriter, adbRun *adb.Run) (err error) {
-	err = adbRun.Output()
-	if err != nil {
-		response.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		response.WriteHeader(http.StatusBadGateway)
-		response.Write(adbRun.StdErr)
+	if contentType != "" {
+		response.Header().Set("Content-Type", contentType)
 	}
-	return err
+
+	if content != nil {
+		_, err := response.Write(content)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // Start sets up the HTTP routes and serves the service, crashing if any errors are encountered.
 func Start() {
 	http.HandleFunc("/help/", helpHandler)
+	http.HandleFunc("/devices/", devicesHandler)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
