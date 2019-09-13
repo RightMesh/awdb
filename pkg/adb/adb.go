@@ -22,20 +22,20 @@ import (
 	"os/exec"
 )
 
-// Run represents the execution of an ADB command.
-type Run struct {
-	command *exec.Cmd
-	args    []string
-	StdOut  []byte
-	StdErr  []byte
+// Command represents the execution of an ADB command.
+type Command struct {
+	cmd    *exec.Cmd
+	args   []string
+	StdOut []byte
+	StdErr []byte
 }
 
-// Output executes the underlying ADB command and waits for it to finish.
-// If the call is successful, Run.StdOut is populated with the output and the result is nil.
-// If the call is unsuccessful, the error is returned, and Run.StdErr is populated if the error
-// is an exec.ExitError.
-func (a *Run) Output() error {
-	output, err := a.command.Output()
+// Run executes the underlying ADB command and waits for it to finish.
+// If the call is successful, Command.StdOut is populated with the output and the error is nil.
+// If the call is unsuccessful, the error is returned, and if it is an exec.ExitError it is used
+// to populate Command.StdErr.
+func (a *Command) Run() error {
+	output, err := a.cmd.Output()
 	if err != nil {
 		if exitError, ok := err.(*exec.ExitError); ok {
 			a.StdErr = exitError.Stderr
@@ -47,9 +47,9 @@ func (a *Run) Output() error {
 	return nil
 }
 
-// NewRun initializes an Run struct with an exec.Command that will call ADB with the
+// NewCommand initializes a Command struct with an exec.Cmd that will call ADB with the
 // provided arguments and leaves the output bytes slices empty.
-func NewRun(args ...string) Run {
+func NewCommand(args ...string) Command {
 	command := exec.Command("adb", args...)
-	return Run{command: command, args: args}
+	return Command{cmd: command, args: args}
 }

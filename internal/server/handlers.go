@@ -25,25 +25,25 @@ import (
 // helpHandler returns the contents of `adb help` as plaintext.
 // May return a 502 if communicating with ADB fails.
 func helpHandler(response http.ResponseWriter, request *http.Request) {
-	adbRun := adb.NewRun("help")
-	if err := adbRun.Output(); err != nil {
-		writeResponse(response, http.StatusBadGateway, contentTypeText, adbRun.StdErr)
+	adbCommand := adb.NewCommand("help")
+	if err := adbCommand.Run(); err != nil {
+		writeResponse(response, http.StatusBadGateway, contentTypeText, adbCommand.StdErr)
 		return
 	}
 
-	writeResponse(response, http.StatusOK, contentTypeText, adbRun.StdOut)
+	writeResponse(response, http.StatusOK, contentTypeText, adbCommand.StdOut)
 }
 
 // devicesHandler returns the contents of `adb devices -l` as JSON.
 // May return a 502 if communicating with ADB fails, or a 500 if marshalling JSON fails.
 func devicesHandler(response http.ResponseWriter, request *http.Request) {
-	adbRun := adb.NewRun("devices", "-l")
-	if err := adbRun.Output(); err != nil {
-		writeResponse(response, http.StatusBadGateway, contentTypeText, adbRun.StdErr)
+	adbCommand := adb.NewCommand("devices", "-l")
+	if err := adbCommand.Run(); err != nil {
+		writeResponse(response, http.StatusBadGateway, contentTypeText, adbCommand.StdErr)
 		return
 	}
 
-	deviceList, err := adb.ParseDeviceList(adbRun.StdOut)
+	deviceList, err := adb.ParseDeviceList(adbCommand.StdOut)
 	if err != nil {
 		writeResponse(response, http.StatusBadGateway, contentTypeText, []byte(err.Error()))
 		return
