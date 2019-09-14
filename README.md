@@ -6,13 +6,13 @@ It aims to make it easier to use remote Android devices for testing and debuggin
 
 ## Installation
 
-AWDB can be installed by calling `go get github.com/rightmesh/awdb`. It requires ADB to be installed.
+Compiled binaries and installation packages can be found on the [releases page](https://github.com/RightMesh/awdb/releases).
 
-Once installed, run AWDB with `$GOPATH/bin/awdb`, or just `awdb` if `$GOBIN` is on your `$PATH`.
+AWDB can be installed from source by calling `go get github.com/rightmesh/awdb`.
+
+AWDB depends on the ADB utility being present.
 
 **Note:** AWDB does not have any built-in security or authentication. Ensure any servers running AWDB are behind a firewall and/or reverse proxy with sufficient security features to prevent unauthorized access to your devices.
-
-TODO: Pre-compiled release binaries.
 
 ## API
 
