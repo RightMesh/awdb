@@ -1,0 +1,108 @@
+openapi: 3.0.2
+info:
+  title: Android Web Debugging Bridge
+  description: This API exposes the functionality of Google's 'Android Debug Bridge'
+    utility.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 0.0.1
+externalDocs:
+  description: Read more about ADB.
+  url: https://developer.android.com/studio/command-line/adb
+tags:
+- name: general commands
+  description: Information and status of ADB.
+paths:
+  /help/:
+    get:
+      tags:
+      - general commands
+      summary: ADB's help page.
+      description: Returns the result of `adb help`.
+      responses:
+        200:
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: Raw contents of ADB's help page.
+                example: |
+                  Android Debug Bridge version 1.0.41
+                  Version 29.0.3
+                  Installed as /usr/bin/adb
+                  ...
+        502:
+          description: Error communicating with ADB.
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: Error message from Go.
+  /devices/:
+    get:
+      tags:
+      - general commands
+      summary: Details of all devices connected to ADB.
+      description: Returns the result of `adb devices -l` parsed into JSON.
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Device'
+        500:
+          description: Error encoding JSON.
+          content:
+            application/json:
+              schema:
+                type: string
+                description: Error message from Go.
+        502:
+          description: Error communicating with ADB.
+          content:
+            application/json:
+              schema:
+                type: string
+                description: Error message from Go.
+components:
+  schemas:
+    Device:
+      required:
+      - serial_id
+      - state
+      - transport_id
+      - usb
+      type: object
+      properties:
+        transport_id:
+          type: integer
+          example: 1
+        serial_id:
+          type: string
+          example: 0a388e93
+        state:
+          type: string
+          enum:
+          - authorized
+          - unauthorized
+          - authorizing
+          - device
+          - offline
+          - no device
+        usb:
+          type: string
+          example: 1-1.4.2
+        product:
+          type: string
+          example: razor
+        model:
+          type: string
+          example: Nexus_7
+        device:
+          type: string
+          example: flo
