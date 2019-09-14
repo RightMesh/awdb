@@ -1,7 +1,8 @@
 name: Go
-on: [push]
-jobs:
 
+on: [push]
+
+jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
@@ -17,12 +18,12 @@ jobs:
       with:
           path: go/src/github.com/rightmesh/awdb
 
-    - name: Install golint
+    - name: Lint Project
       run: |
         export GOPATH=$(realpath ../../../..)
         go get golang.org/x/lint/golint
+        $GOPATH/bin/golint ./...
 
     - name: Build project
       run: |
-        export GOPATH=$(realpath ../../../..)
-        make
+        go build ./...
