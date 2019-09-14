@@ -16,4 +16,4 @@ TODO: Pre-compiled release binaries.
 
 ## API
 
-AWDB's API is documented with the OpenAPI specification [here](api/openapi-spec/awdb.yml). You can browse the documentation online [here](https://redocly.github.io/redoc/?url=https://raw.githubusercontent.com/RightMesh/awdb/api/openapi-spec/awdb.yml).
+AWDB's API is documented with the OpenAPI specification [here](api/openapi-spec/awdb.yml). You can browse the documentation online [here](https://redocly.github.io/redoc/?url=https://raw.githubusercontent.com/RightMesh/awdb/master/api/openapi-spec/awdb.yml).
