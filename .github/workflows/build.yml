@@ -26,4 +26,4 @@ jobs:
 
     - name: Build project
       run: |
-        go build ./...
+        go build
