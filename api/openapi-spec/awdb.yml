@@ -58,14 +58,14 @@ paths:
         500:
           description: Error encoding JSON.
           content:
-            application/json:
+            text/plain:
               schema:
                 type: string
                 description: Error message from Go.
         502:
           description: Error communicating with ADB.
           content:
-            application/json:
+            text/plain:
               schema:
                 type: string
                 description: Error message from Go.
